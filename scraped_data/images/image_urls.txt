@@ -1,0 +1,5 @@
+image urls:
+https://www.net-a-porter.com/variants/images/1647597325563735/cu/w2000_q60.jpg
+https://www.net-a-porter.com/variants/images/1647597325563735/in/w2000_q60.jpg
+https://www.net-a-porter.com/variants/images/1647597325563735/ou/w2000_q60.jpg
+https://www.net-a-porter.com/variants/images/1647597325563735/bk/w2000_q60.jpg

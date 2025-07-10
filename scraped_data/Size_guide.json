@@ -1,0 +1,50 @@
+{
+  "Bust": {
+    "xx small": "84",
+    "x small": "88",
+    "small": "92",
+    "medium": "96",
+    "large": "100",
+    "x large": "104"
+  },
+  "Sleeve": {
+    "xx small": "34",
+    "x small": "35",
+    "small": "36",
+    "medium": "37",
+    "large": "38",
+    "x large": "39"
+  },
+  "Shoulder": {
+    "xx small": "40",
+    "x small": "41",
+    "small": "42",
+    "medium": "43",
+    "large": "44",
+    "x large": "45"
+  },
+  "Waist": {
+    "xx small": "70",
+    "x small": "74",
+    "small": "78",
+    "medium": "82",
+    "large": "86",
+    "x large": "90"
+  },
+  "Hip": {
+    "xx small": "100",
+    "x small": "104",
+    "small": "108",
+    "medium": "112",
+    "large": "116",
+    "x large": "120"
+  },
+  "Length": {
+    "xx small": "86",
+    "x small": "88",
+    "small": "90",
+    "medium": "92",
+    "large": "94",
+    "x large": "96"
+  }
+}

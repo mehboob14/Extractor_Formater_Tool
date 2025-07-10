@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Scraped Dress Information</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-sans">
+  <div class="max-w-7xl mx-auto px-4 py-6">
+
+
+    <div class="flex flex-wrap justify-between gap-6 mb-10">
+
+      <div class="flex-1 min-w-[280px] max-w-[32%] bg-white p-4 rounded-lg shadow">
+        <h2 class="text-xl font-semibold mb-2 text-gray-700">1. EDITOR'S NOTES</h2>
+        {% if editors_notes %}
+        <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ editors_notes }}</p>
+        {% else %}
+        <p class="text-gray-500 text-sm">No editor notes found.</p>
+        {% endif %}
+      </div>
+
+      <div class="flex-1 min-w-[280px] max-w-[32%] bg-white p-4 rounded-lg shadow">
+        <h2 class="text-xl font-semibold mb-2 text-gray-700">2. SIZE & FIT</h2>
+        {% if size_fit %}
+        <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ size_fit }}</p>
+        {% else %}
+        <p class="text-gray-500 text-sm">No size & fit information found.</p>
+        {% endif %}
+      </div>
+
+      <div class="flex-1 min-w-[280px] max-w-[32%] bg-white p-4 rounded-lg shadow">
+        <h2 class="text-xl font-semibold mb-2 text-gray-700">3. MODEL MEASUREMENTS</h2>
+        {% if model_measurements %}
+        <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ model_measurements }}</p>
+        {% else %}
+        <p class="text-gray-500 text-sm">No model measurements found.</p>
+        {% endif %}
+      </div>
+
+      <div class="flex-1 min-w-[280px] max-w-[32%] bg-white p-4 rounded-lg shadow">
+        <h2 class="text-xl font-semibold mb-2 text-gray-700">4. DETAILS & CARE</h2>
+        {% if details_care %}
+        <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ details_care }}</p>
+        {% else %}
+        <p class="text-gray-500 text-sm">No details & care information found.</p>
+        {% endif %}
+      </div>
+
+
+      <div class="flex w-full gap-6">
+        <div class="flex-1 bg-white p-4 rounded-lg shadow overflow-x-auto max-w-[50%]">
+          <h2 class="text-xl font-semibold mb-2 text-gray-700">5. SIZE GUIDE</h2>
+          {% if size_guide %}
+          <table class="min-w-full border border-gray-200 text-sm">
+            <thead class="bg-purple-100">
+              <tr>
+                <th class="px-4 py-2 border text-left">Measurement</th>
+                {% for header in size_headers %}
+                <th class="px-4 py-2 border text-left">{{ header.title() }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for key, values in size_guide.items() %}
+              <tr class="hover:bg-gray-50">
+                <td class="px-4 py-2 border">{{ key }}</td>
+                {% for size in size_headers %}
+                <td class="px-4 py-2 border">{{ values[size] }}</td>
+                {% endfor %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="text-gray-500 text-sm">No size guide found.</p>
+          {% endif %}
+        </div>
+
+        <div class="flex-1 bg-white p-4 rounded-lg shadow max-w-[50%]">
+          <h2 class="text-xl font-semibold mb-4 text-gray-700">6. IMAGES</h2>
+          <div class="flex flex-wrap gap-4 justify-start">
+            {% for image in images %}
+            <div class="w-52 h-52 bg-gray-100 flex items-center justify-center rounded shadow">
+              <img src="{{ url_for('static', filename='images/' ~ image) }}" alt="Dress Image"
+                class="max-w-full max-h-full object-contain">
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4">
+      <div id="responsesContainer" class="space-y-6 mb-10"></div>
+      <form id="promptsContainer" class="space-y-6 mb-6"></form>
+
+      <div class="flex items-center gap-4 mb-10">
+        <button id="addPromptBtn" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Add New
+          Prompt</button>
+        <button id="formatBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Format</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    let promptIndex = 0;
+    let labelCounters = {};
+
+    function createImageLabelFields(promptId) {
+      labelCounters[promptId] = 1;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'image-label-section hidden mt-4';
+      wrapper.innerHTML = `
+          <div class="text-sm font-semibold mb-2 text-gray-700">Add Labels for Images:</div>
+          <div class="image-labels-container space-y-2">
+            <div class="flex gap-2">
+              <input type="text" name="image_label_${promptId}_0" placeholder="Label 1" class="border p-2 rounded w-full text-sm">
+              <button type="button" class="add-image-label bg-blue-500 text-white px-2 rounded text-sm">+</button>
+            </div>
+          </div>
+        `;
+      return wrapper;
+    }
+
+    document.getElementById('addPromptBtn').addEventListener('click', () => {
+      const container = document.getElementById('promptsContainer');
+      const block = document.createElement('div');
+      block.className = 'bg-white p-4 rounded shadow';
+      block.dataset.promptId = promptIndex;
+
+      const imageLabelFields = createImageLabelFields(promptIndex);
+
+      block.innerHTML = `
+          <div class="mb-2 text-sm font-semibold">Select Fields to Include:</div>
+          <div class="flex flex-wrap gap-4 mb-4">
+            ${['includes_images', 'editors_notes', 'details_care', 'size_fit', 'model_measurements', 'sizing_guide']
+          .map(id => `
+                <label class="inline-flex items-center">
+                  <input type="checkbox" name="fields_${promptIndex}" value="${id}" class="mr-1 field-checkbox">
+                  ${id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </label>
+              `).join('')}
+          </div>
+          <textarea name="prompt_text_${promptIndex}" rows="3" class="w-full border rounded p-2 text-sm" placeholder="Enter prompt..."></textarea>
+        `;
+      block.appendChild(imageLabelFields);
+      container.appendChild(block);
+
+
+      block.querySelectorAll('.field-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          const section = block.querySelector('.image-label-section');
+          if (checkbox.value === 'includes_images') {
+            section.classList.toggle('hidden', !checkbox.checked);
+          }
+        });
+      });
+
+
+      block.addEventListener('click', (e) => {
+        if (e.target.classList.contains('add-image-label')) {
+          const container = block.querySelector('.image-labels-container');
+          const labelIdx = labelCounters[promptIndex]++;
+          const newField = document.createElement('div');
+          newField.className = 'flex items-center gap-2';
+          newField.innerHTML = `
+              <input type="text" name="image_label_${promptIndex}_${labelIdx}" placeholder="Label" class="border p-1 rounded text-sm w-28 inline-block">
+              <button type="button" class="add-image-label bg-blue-500 text-white px-2 rounded text-sm">+</button>
+            `;
+          container.appendChild(newField);
+        }
+      });
+
+      promptIndex++;
+    });
+
+    document.getElementById('formatBtn').addEventListener('click', async () => {
+      const formatBtn = document.getElementById('formatBtn');
+      const addPromptBtn = document.getElementById('addPromptBtn');
+
+      formatBtn.disabled = true;
+      addPromptBtn.disabled = true;
+      formatBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      addPromptBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+      const formData = new FormData();
+      const blocks = document.querySelectorAll('#promptsContainer > div');
+
+      let hasValidInput = false;
+
+      blocks.forEach((block, index) => {
+        const textarea = block.querySelector('textarea');
+        const checkboxes = block.querySelectorAll('input[type="checkbox"]:checked');
+
+        if (!textarea || checkboxes.length === 0 || !textarea.value.trim()) {
+          console.warn(`Skipping block ${index}, textarea or checkboxes missing`);
+          return;
+        }
+
+        hasValidInput = true;
+        const selected = [...checkboxes].map(cb => cb.value);
+        formData.append(`prompt_${index}`, textarea.value);
+        formData.append(`fields_${index}`, JSON.stringify(selected));
+
+        if (selected.includes('includes_images')) {
+          let labelIndex = 0;
+          while (true) {
+            const input = block.querySelector(`input[name="image_label_${index}_${labelIndex}"]`);
+            if (!input) break;
+            if (input.value.trim()) {
+              formData.append(`image_label_${index}_${labelIndex}`, input.value.trim());
+            }
+            labelIndex++;
+          }
+        }
+      });
+
+      if (!hasValidInput) {
+        alert("Please fill out at least one complete prompt with selected fields.");
+        formatBtn.disabled = false;
+        addPromptBtn.disabled = false;
+        formatBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        addPromptBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        return;
+      }
+
+      try {
+        const res = await fetch('/format_prompts', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await res.json();
+
+        if (result.error) {
+          console.error("Server error:", result.error);
+          alert("Error from server: " + result.error);
+          return;
+        }
+
+        const responseContainer = document.getElementById('responsesContainer');
+        result.results.forEach((item, idx) => {
+          const block = document.createElement('div');
+          block.className = 'bg-white p-4 rounded shadow';
+          block.innerHTML = `
+  <div class="mb-2 text-sm font-semibold text-purple-700">Prompt Response:</div>
+  <div class="text-sm mb-2"><strong>Fields:</strong> ${item.fields.join(', ')}</div>
+  <div class="text-sm mb-4"><strong>Prompt:</strong><br><pre class="whitespace-pre-wrap text-gray-800 bg-gray-50 p-2 rounded border border-gray-200">${item.full_prompt}</pre></div>
+  <div class="bg-gray-100 p-3 rounded text-sm whitespace-pre-wrap"><strong>Output:</strong><br>${item.response}</div>
+`;
+
+          responseContainer.appendChild(block);
+        });
+
+        document.getElementById('promptsContainer').innerHTML = '';
+        promptIndex = 0;
+        document.getElementById('addPromptBtn').click();
+
+      } catch (err) {
+        console.error("Fetch or JSON error:", err);
+        alert("Something went wrong. Check the console.");
+      }
+
+      formatBtn.disabled = false;
+      addPromptBtn.disabled = false;
+      formatBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      addPromptBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    });
+  </script>
+
+
+</body>
+
+</html>
