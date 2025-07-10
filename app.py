@@ -11,10 +11,9 @@ app = Flask(__name__)
 STATIC_IMAGE_DIR = os.path.join("static", "images")
 os.makedirs(STATIC_IMAGE_DIR, exist_ok=True)
 
-OPENAI_API_KEY =os.environ["OPENAI_API_KEY"]
-
+OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
-llm = ChatOpenAI(model="gpt-4.1", temperature=0)
+llm = ChatOpenAI(model="gpt-4.1", temperature=0.3)
 
 
 @app.route("/", methods=["GET", "POST"])
